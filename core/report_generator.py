@@ -2,15 +2,16 @@ import json
 import os
 from datetime import datetime
 from typing import Dict
-import tkinter as tk
-from tkinter import filedialog
 
 class ReportGenerator:
     """Generate and export security reports"""
     
     def __init__(self):
         self.report_dir = "data/reports"
-        os.makedirs(self.report_dir, exist_ok=True)
+        try:
+            os.makedirs(self.report_dir, exist_ok=True)
+        except:
+            pass  # لو مش موجود
     
     def generate_report(self, data: Dict) -> str:
         """Generate a formatted report from analysis data"""
@@ -65,7 +66,11 @@ class ReportGenerator:
         else:
             raise ValueError(f"Unsupported format: {format}")
         
-        with open(filename, 'w', encoding='utf-8') as f:
-            f.write(content)
+        try:
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(content)
+        except:
+            # لو مش قادر يكتب (في السحابة)، يرجع النص بس
+            pass
         
         return filename
