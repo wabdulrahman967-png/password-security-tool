@@ -1,83 +1,90 @@
 import streamlit as st
+import sys
+import os
+
+# Add current directory to path
+sys.path.insert(0, os.path.dirname(__file__))
+
 from core.password_checker import PasswordStrengthChecker
 from core.breach_checker import BreachChecker
 
-# إعداد الصفحة
+# Page configuration
 st.set_page_config(
     page_title="Password Security Suite",
     page_icon="🔐",
     layout="centered"
 )
 
-# تهيئة الكلاسات
+# Initialize classes
 checker = PasswordStrengthChecker()
 breach_checker = BreachChecker()
 
-# العنوان
+# Title
 st.title("🔐 Password Security Suite")
-st.markdown("### تحليل قوة كلمة المرور والتحقق من التسريبات")
+st.markdown("### Analyze password strength & check for breaches")
 
-# حقل إدخال كلمة المرور
-password = st.text_input("أدخل كلمة المرور:", type="password")
+# Password input
+password = st.text_input("Enter your password:", type="password")
 
-# زر التحليل
-if st.button("🔍 تحليل", type="primary"):
+# Analyze button
+if st.button("🔍 Analyze", type="primary"):
     if password:
-        with st.spinner("جاري التحليل..."):
-            # تحليل القوة
+        with st.spinner("Analyzing..."):
+            # Strength analysis
             strength = checker.check_strength(password)
             
-            # التحقق من التسريب
+            # Breach check
             breach = breach_checker.check_password(password)
             
-            # عرض النتائج
+            # Display results
             st.markdown("---")
-            st.markdown("## 📊 النتائج")
+            st.markdown("## 📊 Results")
             
-            # عرض القوة
+            # Strength display
             if "Weak" in strength['strength']:
-                st.error(f"**القوة:** {strength['strength']}")
+                st.error(f"**Strength:** {strength['strength']}")
             elif "Medium" in strength['strength']:
-                st.warning(f"**القوة:** {strength['strength']}")
+                st.warning(f"**Strength:** {strength['strength']}")
             elif "Strong" in strength['strength']:
-                st.success(f"**القوة:** {strength['strength']}")
+                st.success(f"**Strength:** {strength['strength']}")
             else:
-                st.info(f"**القوة:** {strength['strength']}")
+                st.info(f"**Strength:** {strength['strength']}")
             
-            # النقاط والإنتروبيا
+            # Score and Entropy
             col1, col2 = st.columns(2)
             with col1:
-                st.metric("الدرجة", f"{strength['score']}/{strength['max_score']}")
+                st.metric("Score", f"{strength['score']}/{strength['max_score']}")
             with col2:
-                st.metric("الإنتروبيا", f"{strength['entropy']} bits")
+                st.metric("Entropy", f"{strength['entropy']} bits")
             
-            # المعايير
-            st.markdown("### 📋 المعايير")
+            # Criteria
+            st.markdown("### 📋 Criteria")
             cols = st.columns(2)
-            for i, (key, value) in enumerate(strength['criteria'].items()):
+            items = list(strength['criteria'].items())
+            for i, (key, value) in enumerate(items):
                 label = key.replace('_', ' ').title()
                 icon = "✅" if value else "❌"
                 with cols[i % 2]:
                     st.write(f"{icon} {label}")
             
-            # التوصيات
+            # Recommendations
             if strength['feedback']:
-                st.markdown("### 💡 التوصيات")
+                st.markdown("### 💡 Recommendations")
                 for f in strength['feedback']:
                     st.write(f)
             
-            # التحقق من التسريب
-            st.markdown("### 🔍 فحص التسريبات")
+            # Breach check
+            st.markdown("### 🔍 Breach Check")
             if breach:
                 if breach[0] is None:
                     st.warning(f"⚠️ {breach[1]}")
                 elif breach[0]:
-                    st.error(f"🚨 **تم تسريب كلمة المرور!** عدد المرات: {breach[1]}")
+                    st.error(f"🚨 **Password BREACHED!** Found {breach[1]} times")
                 else:
-                    st.success("✅ **لم يتم تسريب كلمة المرور**")
+                    st.success("✅ **No breaches found**")
             
-            # نصيحة
+            # Footer
             st.markdown("---")
-            st.caption("🔒 كلمة المرور مش بتتخزن ولا بتتبعت لأي حد")
+            st.caption("🔒 Your password is never stored or sent anywhere")
     else:
-        st.warning("من فضلك أدخل كلمة المرور أولاً")
+        st.warning("Please enter a password first")
